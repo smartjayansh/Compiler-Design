@@ -1,100 +1,116 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-void take(map<char,vector<string> > &mp ,int n)
+void getFirst(string s,map<string,vector<string>> &mp,map<string,vector<char>> &first,map<string,int> &vis,vector<char> &v)
 {
-	for(int i=0;i<n;i++)
-	{
-		string inp;
-		cin>>inp;
-		int tra=2,len=inp.length();
-		
-		while(tra<len)
-		{
-			string temp="";
-			while(inp[tra]!='/' && tra<len)
-			{
-				temp+=inp[tra];
-				tra++;
-			}
-			if(temp!="")
-				mp[inp[0]].push_back(temp);
-			tra++;
-		}
-	}
+    if(vis[s]==1)
+    {
+        for(int i=0;i<first[s].size();i++)
+        {
+            if(find(v.begin(),v.end(),first[s][i])==v.end())
+                v.push_back(first[s][i]);
+        }
+        return;
+    }
+    string t="";
+    vector<char> vv;
+    for(int i=0;i<mp[s].size();i++)
+    {
+        int j=0;
+        for(;j<mp[s][i].length();j++)
+        {
+            if(mp[s][i][j]<'A' || mp[s][i][j]>'Z')
+            {
+                if(find(v.begin(),v.end(),mp[s][i][j])==v.end())
+                    v.push_back(mp[s][i][j]);
+                break;
+            }
+            else
+            {
+                vv.clear();
+                t=mp[s][i][j];
+                getFirst(t,mp,first,vis,vv);
+                for(int k=0;k<vv.size();k++)
+                {
+                    if(find(v.begin(),v.end(),vv[k])==v.end() && vv[k]!='#')
+                        v.push_back(vv[k]);
+                }
+                if(find(vv.begin(),vv.end(),'#')==vv.end())
+                    break;
+            }
+        }
+        if(j==mp[s][i].length())
+        {
+            if(find(vv.begin(),vv.end(),'#')==vv.end())
+                v.push_back('#');
+        }
+
+    }
+    first[s]=v;
+    vis[s]=1;
+    return;
 }
-void printGrammar(map<char,vector<string> > mp)
-{
-//	auto it=mp.begin();
-	map<char,vector<string> >::iterator it=mp.begin();
-	while(it!=mp.end())
-	{
-		cout<<it->first<<"->";
-//		auto it2=(it->second).begin();
-		vector<string>::iterator it2=(it->second).begin();
-		while(it2!=(it->second).end())
-		{
-			cout<<*it2<<"/";
-			it2++;
-		}
-		cout<<endl;
-		it++;
-	}
-}
-void printFirst(map<char,set<char> > mp)
-{
-//	auto it=mp.begin();
-	map<char,set<char> >::iterator it=mp.begin();
-	while(it!=mp.end())
-	{
-		cout<<it->first<<"->";
-//		auto it2=(it->second).begin();
-		set<char>::iterator it2=(it->second).begin();
-		while(it2!=(it->second).end())
-		{
-			cout<<*it2<<"/";
-			it2++;
-		}
-		cout<<endl;
-		it++;
-	}
-}
-void recur(map<char,vector<string> > mp, map<char,set<char> > &fir,char sym)
-{
-	vector<string>::iterator it=(mp[sym]).begin();
-	int sov=(mp[sym]).size();
-	for(int i=0;i<sov;i++)
-	{
-		char temp=mp[sym][i][0];
-		if(islower(temp))
-		{
-			fir[sym].insert(temp);
-		}
-		else
-		{
-			recur(mp,fir,temp);
-			set<char>::iterator it2=fir[temp].begin();
-			while(it2!=fir[temp].end())
-			{
-				fir[sym].insert(*it2);
-				it2++;
-			}
-		}
-			
-	}
-}
+
 int main()
 {
-	map<char,vector<string> > mp;
-	map<char,set<char> >fir;
-	int n;
-	cout<<"Enter no. of productions\n";
-	cin>>n;
-	take(mp,n);
-	
-	printGrammar(mp);
-	cout<<endl;
-	char start='S';
-	recur(mp,fir,start);
-	printFirst(fir);
+    int n,j;
+    cout<<"\nEnter the number of productions :- ";
+    cin>>n;
+    map<string,vector<string>> mp;
+    map<string,vector<char>> first;
+    map<string,int> vis;
+    string ss,t,te,st;
+    for(int i=0;i<n;i++)
+    {
+        cin>>ss;
+        t="";
+        j=0;
+        while(j<ss.length() && ss[j]!='-')
+            t=t+ss[j++];
+        if(i==0)
+            st=t;
+        j=j+2;
+        while(j<ss.length())
+        {
+            te="";
+            while(j<ss.length() && ss[j]!=',')
+                te=te+ss[j++];
+            mp[t].push_back(te);
+            j++;
+        }
+    }
+    auto it=mp.begin();
+    /*while(it!=mp.end())
+    {
+        cout<<it->first<<"->";
+        for(int i=0;i<it->second.size();i++)
+            cout<<it->second[i]<<",";
+        cout<<"\n";
+        it++;
+    }
+    */
+    cout<<"\n\n\n\n";
+    vector<char> v;
+    getFirst(st,mp,first,vis,v);
+    first[st]=v;
+    while(it!=mp.end())
+    {
+        if(vis[it->first]==0)
+        {
+            v.clear();
+            getFirst(it->first,mp,first,vis,v);
+            first[it->first]=v;
+        }
+        it++;
+    }
+    auto itt=first.begin();
+    while(itt!=first.end())
+    {
+        cout<<itt->first<<"->";
+        for(int i=0;i<itt->second.size();i++)
+            cout<<itt->second[i]<<",";
+        cout<<"\n";
+        itt++;
+    }
+    return 0;
 }
